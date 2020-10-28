@@ -1,1 +1,1 @@
-from action-priors.envs import LinearEnv
+from src.envs import LinearEnv

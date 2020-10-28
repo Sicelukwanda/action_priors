@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class LinearEnv(object):
+class LinearEnv:
     """
     A univariate environment on a horizontal line that has regions of highly negative reward.
     """
@@ -59,7 +59,7 @@ class LinearEnv(object):
             r = self.reward(self.s)
             self.max_steps -= 1
 
-        if (self.visualize):
+        if self.visualize:
             self.render()
 
         return self.s, r, done, {}
