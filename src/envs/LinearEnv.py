@@ -1,6 +1,10 @@
-class LinearEnv:
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+class LinearEnv(object):
     """
-    A univariate environment on a horizontal line that has regions of highly negaive reward.
+    A univariate environment on a horizontal line that has regions of highly negative reward.
     """
 
     def __init__(self, s_goal=6, randomize=False, s_max=10, visualize=False):
@@ -43,7 +47,7 @@ class LinearEnv:
         # enforce boundaries
         if self.s < 0:
             self.s = np.array([0.0])
-        elif (self.s > self.s_max):
+        elif self.s > self.s_max:
             self.s = self.s_max
 
         # check if goal reached or max steps reached
@@ -56,7 +60,7 @@ class LinearEnv:
             self.max_steps -= 1
 
         if (self.visualize):
-            render()
+            self.render()
 
         return self.s, r, done, {}
 
