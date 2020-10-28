@@ -6,7 +6,6 @@ class LinearEnv:
     """
     A univariate environment on a horizontal line that has regions of highly negative reward.
     """
-
     def __init__(self, s_goal=6, randomize=False, s_max=10, visualize=False):
         """
         s_goal - goal state
