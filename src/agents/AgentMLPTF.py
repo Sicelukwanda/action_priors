@@ -44,7 +44,7 @@ class AgentMLPTF(Model):
 
         # if not batch:
         #     action = action.item()
-        return dict({"Action:": action, "LogProbability": action_log_prob}, **GaussianParams)
+        return dict({"Action": action, "LogProbability": action_log_prob}, **GaussianParams)
 
     def visualise_model(self):
         tf.keras.utils.plot_model(

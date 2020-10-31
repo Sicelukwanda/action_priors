@@ -1,25 +1,32 @@
 import unittest
 import numpy as np
+from src.agents.AgentMLPTF import AgentMLPTF
 import tensorflow as tf
 
-np.random.seed(1)
-tf.random.set_seed(1)
-
-# instantiate agent
-agent = AgentMLPTF()
 
 
-agent.visualise_model()
+
+# agent.visualise_model()
 # print(agent.summary())
-
-print("Agent:\n", agent(np.array([2])))
 
 class MyTestCase(unittest.TestCase):
     def test_single_input(self):
-        self.assertEqual(True, False)
+        # reset seeds
+        np.random.seed(1)
+        tf.random.set_seed(1)
+        # instantiate agent
+        agent = AgentMLPTF()
+        action = agent(np.array([2]))["Action"]
+        self.assertEqual(action, np.array([0.57267284],dtype=np.float32))
 
     def test_batch_input(self):
-        self.assertEqual(True, False)
+        # reset seeds
+        np.random.seed(1)
+        tf.random.set_seed(1)
+        # instantiate agent
+        agent = AgentMLPTF()
+        action = agent(np.array([[2]]))["Action"]
+        self.assertEqual(action, np.array([0.57267284],dtype=np.float32))
 
 
 if __name__ == '__main__':
