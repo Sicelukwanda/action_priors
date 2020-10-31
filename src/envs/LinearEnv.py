@@ -35,7 +35,7 @@ class LinearEnv:
 
     def step(self, a):
 
-        assert np.ndim(a) == 1, "incorrect action dim"
+        assert np.ndim(a) != 1, "incorrect action dim"
         # clip the action
         a = np.clip(a, -0.5, 0.5)
 
