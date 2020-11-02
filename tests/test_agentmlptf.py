@@ -4,8 +4,6 @@ from src.agents.AgentMLPTF import AgentMLPTF
 import tensorflow as tf
 
 
-
-
 # agent.visualise_model()
 # print(agent.summary())
 

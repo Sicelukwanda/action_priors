@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class LinearEnv:
@@ -23,8 +24,11 @@ class LinearEnv:
         self.s_max = np.expand_dims(s_max, axis=0)
         self.s = self.reset()
 
+        # rendering
+        self.ax = None
+
     def reset(self):
-        self.max_steps = 20
+        self.steps = 0
 
         if self.random_s0:
             self.s = np.random.beta(a=0.5, b=0.5, size=(1,)) * self.s_max
@@ -35,13 +39,12 @@ class LinearEnv:
 
     def step(self, a):
 
-        assert np.ndim(a) != 1, "incorrect action dim"
+        assert np.ndim(a) == 1, "incorrect action dim " + str(np.ndim(a))
         # clip the action
         a = np.clip(a, -0.5, 0.5)
 
         done = False
-        # self.s += np.array(a)
-        self.add = np.add(self.s, a, out=self.s, casting="unsafe")
+        self.s += np.array(a)
 
         # enforce boundaries
         if self.s < 0:
@@ -50,16 +53,16 @@ class LinearEnv:
             self.s = self.s_max
 
         # check if goal reached or max steps reached
-        if np.abs(self.s - self.s_goal) < self.goal_tol or self.max_steps == 0:
+        if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps:
             done = True
             r = 0.0
         else:
             # compute reward
             r = self.reward(self.s)
-            self.max_steps -= 1
+            self.steps += 1
 
         if self.visualize:
-            self.render()
+            self.render(a)
 
         return self.s, r, done, {}
 
@@ -68,6 +71,18 @@ class LinearEnv:
         # within circle boundaries (highly penalising states)
         return - np.abs(s - self.s_goal)
 
-    def render(self):
-        plt.scatter(self.s, 0)
-        plt.scatter(self.s_goal, 0)
+    def render(self, a, azimuth=60, elevation=20):
+
+        if self.ax is None:
+            fig = plt.figure()
+            self.ax = fig.add_subplot(111, projection='3d')
+
+        self.ax.scatter(self.s, self.steps*5, a, c='r', marker='o')
+        self.ax.azim = azimuth
+        self.ax.elev = elevation
+
+        self.ax.set_xlabel('state')
+        self.ax.set_ylabel('timestep')
+        self.ax.set_zlabel('action')
+        # draw starting and goal lines
+
