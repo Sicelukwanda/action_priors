@@ -18,8 +18,8 @@ class AgentMLPTF(Model):
 
         # model layers
         d1 = Dense(15, activation='relu', name="d1")(inputs)
-        d2_mu = Dense(1, activation='tanh', name="d2_mu")(d1)
-        d2_sigma = Dense(1, activation='sigmoid', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
+        d2_mu = Dense(1, activation='relu', name="d2_mu")(d1)
+        d2_sigma = Dense(1, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
         # model outputs
         outputs = {"Loc": d2_mu, "Scale": d2_sigma}

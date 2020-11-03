@@ -41,7 +41,7 @@ class LinearEnv:
 
         assert np.ndim(a) == 1, "incorrect action dim " + str(np.ndim(a))
         # clip the action
-        a = np.clip(a, -0.5, 0.5)
+        a = np.clip(a, -1, 1)
 
         done = False
         self.s += np.array(a)
@@ -69,7 +69,7 @@ class LinearEnv:
     def reward(self, s):
         # insert code for checking if the agent is
         # within circle boundaries (highly penalising states)
-        return - np.abs(s - self.s_goal)
+        return - (s - self.s_goal)**2
 
     def render(self, a, azimuth=60, elevation=20):
 
