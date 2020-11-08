@@ -4,6 +4,11 @@ import tensorflow as tf
 import numpy as np
 import tensorflow_probability as tfp
 tfd = tfp.distributions
+
+# make all layer data types consistent
+tf.keras.backend.set_floatx('float64')
+
+# Set random seeds
 tf.random.set_seed(0)
 np.random.seed(0)
 
@@ -39,7 +44,7 @@ class AgentMLPTF(Model):
         # 1. Define Policy
         GaussianParams = self.model(x)  # at this point, x is the output of d1
 
-        min_stddev = 0  # define minimum for sigma value 1e-4
+        min_stddev = 1e-9  # define minimum for sigma value 1e-4
 
         # 2. Define Gaussian tf probability distribution layer
         action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
