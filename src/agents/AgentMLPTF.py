@@ -38,19 +38,21 @@ class AgentMLPTF(Model):
         # 1. Define Policy
         GaussianParams = self.model(x)  # at this point, x is the output of d1
 
-        # 2. Sample policy to get action
-        min_stddev = 0 #1e-4
-        #print("Scale is:",GaussianParams["Scale"].numpy())
+        min_stddev = 0  # define minimum for sigma value 1e-4
+
+        # 2. Define Gaussian tf probability distribution layer
         action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
 
-
+        # 3. Sample policy to get action
         action = action_dist.sample()
-        # the sample actions a vector of multple actions,
-        action_log_prob = action_dist.log_prob(action) # add mininmum log prob for actions
 
-        # if not batch:
-        #     action = action.item()
-        return dict({"Action": action.numpy().flatten(), "LogProbability": action_log_prob}, **GaussianParams)
+        # 4. Get log probability from tfp layer
+        action_log_prob = action_dist.log_prob(action)  # add mininmum log prob for actions
+
+        if not batch:
+             action = action.numpy().flatten()
+             action_log_prob = action_log_prob.numpy().flatten()
+        return dict({"Action": action, "LogProbability": action_log_prob}, **GaussianParams)
 
     def visualise_model(self):
         tf.keras.utils.plot_model(
