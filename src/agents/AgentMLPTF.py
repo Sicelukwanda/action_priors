@@ -7,6 +7,7 @@ tfd = tfp.distributions
 tf.random.set_seed(0)
 np.random.seed(0)
 
+
 class AgentMLPTF(Model):
     """
     Uses subclassing and functional API in keras to define a Gaussian MLP policy.

@@ -54,7 +54,7 @@ class LinearEnv:
             self.s = self.s_max
 
         # check if goal reached or max steps reached
-        if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps:
+        if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps - 1:
             done = True
             r = 0.0
         else:
