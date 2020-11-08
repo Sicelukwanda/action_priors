@@ -44,7 +44,8 @@ class LinearEnv:
         a = np.clip(a, -1, 1)
 
         done = False
-        self.s += np.array(a)
+
+        self.s = np.array(self.s) + np.array(a)
 
         # enforce boundaries
         if self.s < 0:
@@ -69,7 +70,7 @@ class LinearEnv:
     def reward(self, s):
         # insert code for checking if the agent is
         # within circle boundaries (highly penalising states)
-        return - (s - self.s_goal)**2
+        return (s - self.s_goal)**2
 
     def render(self, a, azimuth=60, elevation=20):
 
