@@ -9,8 +9,8 @@ tfd = tfp.distributions
 tf.keras.backend.set_floatx('float64')
 
 # Set random seeds
-tf.random.set_seed(0)
-np.random.seed(0)
+#tf.random.set_seed(0)
+#np.random.seed(0)
 
 
 class AgentMLPTF(Model):
@@ -21,13 +21,22 @@ class AgentMLPTF(Model):
     def __init__(self):
         super(AgentMLPTF, self).__init__()
 
+        # declare action distribution
+        self.action_dist = None
+
+        normalizer = tf.keras.layers.LayerNormalization(axis=1)
+
         # model inputs
-        inputs = tf.keras.Input(shape=(1,))
+        inputs = tf.keras.Input(shape=(1,), dtype='float64')
+
+        # normalize inputs
+        # norm_inputs = normalizer(inputs)
+        # norm_inputs = inputs/10.0
 
         # model layers (output = activation(dot(input, kernel) + bias) )
         d1 = Dense(15, activation='relu', name="d1")(inputs)
         d2_mu = Dense(1, activation='tanh', name="d2_mu")(d1)
-        d2_sigma = Dense(1, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
+        d2_sigma = Dense(1, activation='sigmoid', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
         # model outputs
         outputs = {"Loc": d2_mu, "Scale": d2_sigma}
@@ -44,16 +53,16 @@ class AgentMLPTF(Model):
         # 1. Define Policy
         GaussianParams = self.model(x)  # at this point, x is the output of d1
 
-        min_stddev = 1e-9  # define minimum for sigma value 1e-4
+        min_stddev = 0 #1e-3  # define minimum for sigma value 1e-4
 
         # 2. Define Gaussian tf probability distribution layer
-        action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
+        self.action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
 
         # 3. Sample policy to get action
-        action = action_dist.sample()
+        action = self.action_dist.sample()
 
         # 4. Get log probability from tfp layer
-        action_log_prob = action_dist.log_prob(action)  # add mininmum log prob for actions
+        action_log_prob = self.action_dist.log_prob(action)  # add minimum log prob for actions
 
         if not batch:
              action = action.numpy().flatten()

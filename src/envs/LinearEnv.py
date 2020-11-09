@@ -31,7 +31,7 @@ class LinearEnv:
         self.steps = 0
 
         if self.random_s0:
-            self.s = np.random.beta(a=0.5, b=0.5, size=(1,)) * self.s_max
+            self.s = np.random.choice(np.array([0.5, 1, self.s_max-0.5, self.s_max-1])) + np.random.normal(loc=0, scale=0.2, size=(1,))
             return self.s
         else:
             self.s = np.expand_dims(1.0, axis=0)
@@ -43,6 +43,9 @@ class LinearEnv:
         # clip the action
         a = np.clip(a, -1, 1)
 
+        r = 0.0
+        wall_penalty = -100
+
         done = False
 
         self.s = np.array(self.s) + np.array(a)
@@ -50,8 +53,10 @@ class LinearEnv:
         # enforce boundaries
         if self.s < 0:
             self.s = np.array([0.0])
+            r = wall_penalty
         elif self.s > self.s_max:
             self.s = self.s_max
+            r = wall_penalty
 
         # check if goal reached or max steps reached
         if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps - 1:
@@ -59,7 +64,7 @@ class LinearEnv:
             r = 0.0
         else:
             # compute reward
-            r = self.reward(self.s)
+            r += self.reward(self.s)
             self.steps += 1
 
         if self.visualize:
@@ -70,7 +75,8 @@ class LinearEnv:
     def reward(self, s):
         # insert code for checking if the agent is
         # within circle boundaries (highly penalising states)
-        return (s - self.s_goal)**2
+        return -(s - self.s_goal)**2
+
 
     def render(self, a, azimuth=60, elevation=20):
 
