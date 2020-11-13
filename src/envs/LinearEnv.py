@@ -30,6 +30,9 @@ class LinearEnv:
     def reset(self):
         self.steps = 0
 
+        # rendering
+        self.ax = None
+
         if self.random_s0:
             self.s = np.random.choice(np.array([0.5, 1, self.s_max-0.5, self.s_max-1])) + np.random.normal(loc=0, scale=0.2, size=(1,))
             return self.s
@@ -44,7 +47,7 @@ class LinearEnv:
         a = np.clip(a, -1, 1)
 
         r = 0.0
-        wall_penalty = -100
+        wall_penalty = 0
 
         done = False
 
@@ -92,4 +95,8 @@ class LinearEnv:
         self.ax.set_ylabel('timestep')
         self.ax.set_zlabel('action')
         # draw starting and goal lines
+
+        # check if goal reached or max steps reached
+        if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps - 1:
+            plt.show()
 
