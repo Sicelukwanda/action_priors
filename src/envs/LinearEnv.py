@@ -17,24 +17,28 @@ class LinearEnv:
         # initialise env
         self.random_s0 = randomize
         self.visualize = visualize
-        self.goal_tol = 0.5
-        self.max_steps = 20
+        self.goal_tol = 0.1
+        self.max_steps = 50
 
         self.s_goal = np.expand_dims(s_goal, axis=0)
         self.s_max = np.expand_dims(s_max, axis=0)
         self.s = self.reset()
 
         # rendering
-        self.ax = None
+        self.ax1 = None
+        self.ax2 = None
 
     def reset(self):
         self.steps = 0
 
         # rendering
-        self.ax = None
+        self.ax1 = None
+        self.ax2 = None
+
 
         if self.random_s0:
-            self.s = np.random.choice(np.array([0.5, 1, self.s_max-0.5, self.s_max-1])) + np.random.normal(loc=0, scale=0.2, size=(1,))
+            self.s = np.random.choice(np.array([0.5, 1, self.s_max-0.5, self.s_max-1],dtype=np.float64)) + np.random.normal(loc=0, scale=0.2, size=(1,))
+            self.s = np.clip(self.s,0,self.s_max)
             return self.s
         else:
             self.s = np.expand_dims(1.0, axis=0)
@@ -62,7 +66,7 @@ class LinearEnv:
             r = wall_penalty
 
         # check if goal reached or max steps reached
-        if np.abs(self.s - self.s_goal) < self.goal_tol or self.steps == self.max_steps - 1:
+        if np.abs(self.s - self.s_goal) <= self.goal_tol or self.steps == self.max_steps - 1:
             done = True
             r = 0.0
         else:
@@ -80,20 +84,19 @@ class LinearEnv:
         # within circle boundaries (highly penalising states)
         return -(s - self.s_goal)**2
 
+    def render(self, a):
 
-    def render(self, a, azimuth=60, elevation=20):
+        if self.ax1 is None and self.ax2 is None:
+            fig, (self.ax1, self.ax2) = plt.subplots(2, sharex=True)
+            fig.suptitle('States and Actions over time')
+            self.ax2.set_xlabel('time step')
+            self.ax2.set_ylabel('state')
+            self.ax1.set_ylabel('action')
 
-        if self.ax is None:
-            fig = plt.figure()
-            self.ax = fig.add_subplot(111, projection='3d')
+        self.ax1.scatter(self.steps, a, color = 'r')
+        self.ax2.scatter(self.steps, self.s, color ='r')
 
-        self.ax.scatter(self.s, self.steps*5, a, c='r', marker='o')
-        self.ax.azim = azimuth
-        self.ax.elev = elevation
 
-        self.ax.set_xlabel('state')
-        self.ax.set_ylabel('timestep')
-        self.ax.set_zlabel('action')
         # draw starting and goal lines
 
         # check if goal reached or max steps reached

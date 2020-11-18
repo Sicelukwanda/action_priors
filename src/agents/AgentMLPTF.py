@@ -6,7 +6,7 @@ import tensorflow_probability as tfp
 tfd = tfp.distributions
 
 # make all layer data types consistent
-#tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx('float64')
 
 from IPython.core.debugger import set_trace
 
