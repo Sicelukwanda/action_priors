@@ -6,7 +6,7 @@ import tensorflow_probability as tfp
 tfd = tfp.distributions
 
 # make all layer data types consistent
-tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx('float32')
 
 from IPython.core.debugger import set_trace
 
@@ -20,7 +20,7 @@ class GaussianAgent(Model):
     Uses subclassing and functional API in keras to define a Gaussian MLP policy.
     """
 
-    def __init__(self):
+    def __init__(self,action_dim=1,state_dim=1):
         super(GaussianAgent, self).__init__()
 
         # declare action distribution
@@ -29,7 +29,7 @@ class GaussianAgent(Model):
         normalizer = tf.keras.layers.LayerNormalization(axis=1)
 
         # model inputs
-        inputs = tf.keras.Input(shape=(1,), dtype='float64')
+        inputs = tf.keras.Input(shape=(state_dim,), dtype='float64')
 
         # normalize inputs
         # norm_inputs = normalizer(inputs)
@@ -37,8 +37,9 @@ class GaussianAgent(Model):
 
         # model layers (output = activation(dot(input, kernel) + bias) )
         d1 = Dense(15, activation='relu', name="d1")(inputs)
-        d2_mu = Dense(1, activation='tanh', name="d2_mu")(d1)
-        d2_sigma = Dense(1, activation='sigmoid', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
+        d1 = Dense(15, activation='relu', name="d12")(d1)
+        d2_mu = Dense(action_dim, activation='tanh', name="d2_mu")(d1)
+        d2_sigma = Dense(action_dim, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
         # model outputs
         outputs = {"Loc": d2_mu, "Scale": d2_sigma}
@@ -93,7 +94,7 @@ class BetaAgent(Model):
         normalizer = tf.keras.layers.LayerNormalization(axis=1)
 
         # model inputs
-        inputs = tf.keras.Input(shape=(1,), dtype='float64')
+        inputs = tf.keras.Input(shape=(1,))
 
         # normalize inputs
         # norm_inputs = normalizer(inputs)
@@ -101,6 +102,7 @@ class BetaAgent(Model):
 
         # model layers (output = activation(dot(input, kernel) + bias) )
         d1 = Dense(15, activation='relu', name="d1")(inputs)
+        d1 = Dense(15, activation='relu', name="d12")(d1)
         d2_alpha = Dense(1, activation='exponential', name="d2_mu")(d1)
         d2_beta = Dense(1, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
@@ -120,14 +122,11 @@ class BetaAgent(Model):
         BetaParams = self.model(x)  # at this point, x is the output of d1
 
         # 2. Define Gaussian tf probability distribution layer
-        self.action_dist = tfd.Beta(BetaParams["Alpha"], BetaParams["Beta"], validate_args=True,)
+        self.action_dist = tfd.Beta(BetaParams["Alpha"], BetaParams["Beta"], validate_args=True)
         # set_trace()
 
         # 3. Sample policy to get action
         action = self.action_dist.sample()
-        tf.print("Action", action)
-        tf.print("Alpha", BetaParams["Alpha"])
-        tf.print("Beta", BetaParams)
 
         # 4. Get log probability from tfp layer
         action_log_prob = self.action_dist.log_prob(tf.convert_to_tensor(action))  # add minimum log prob for actions

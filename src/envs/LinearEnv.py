@@ -18,7 +18,7 @@ class LinearEnv:
         self.random_s0 = randomize
         self.visualize = visualize
         self.goal_tol = 0.1
-        self.max_steps = 50
+        self.max_steps = 100
 
         self.s_goal = np.expand_dims(s_goal, axis=0)
         self.s_max = np.expand_dims(s_max, axis=0)
