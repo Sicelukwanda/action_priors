@@ -30,6 +30,7 @@ class LinearEnv:
 
     def reset(self):
         self.steps = 0
+        self.a_prev = 0
 
         # rendering
         self.ax1 = None
@@ -55,7 +56,10 @@ class LinearEnv:
 
         done = False
 
-        self.s = np.array(self.s) + np.array(a)
+        self.s = np.array(self.s) + np.array(a)-np.array(self.a_prev)
+
+        # update previous action
+        self.a_prev = a
 
         # enforce boundaries
         if self.s < 0:
