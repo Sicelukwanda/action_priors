@@ -24,6 +24,8 @@ class GaussianAgent(Model):
         super(GaussianAgent, self).__init__()
 
         # declare action distribution
+        self.state_dim = state_dim
+        self.action_dim = action_dim
         self.action_dist = None
 
         normalizer = tf.keras.layers.LayerNormalization(axis=1)
@@ -33,16 +35,15 @@ class GaussianAgent(Model):
 
         # normalize inputs
         # norm_inputs = normalizer(inputs)
-        # norm_inputs = inputs/10.0
 
         # model layers (output = activation(dot(input, kernel) + bias) )
         d1 = Dense(15, activation='relu', name="d1")(inputs)
         d1 = Dense(15, activation='relu', name="d12")(d1)
         d2_mu = Dense(action_dim, activation='tanh', name="d2_mu")(d1)
-        d2_sigma = Dense(action_dim, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
+        # d2_sigma = Dense(action_dim, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
         # model outputs
-        outputs = {"Loc": d2_mu, "Scale": d2_sigma}
+        outputs = {"Loc": d2_mu} #, "Scale": d2_sigma}
 
         self.model = tf.keras.Model(inputs, outputs)  # model returns TFP Gaussian dist params as output
 
@@ -51,15 +52,15 @@ class GaussianAgent(Model):
         batch = True
         if np.ndim(x) == 1:
             batch = False
-            x = np.expand_dims(x, axis=1)
+            x = np.expand_dims(x, axis=0)
 
         # 1. Define Policy
         GaussianParams = self.model(x)  # at this point, x is the output of d1
 
-        min_stddev = 0 #1e-3  # define minimum for sigma value 1e-4
+        min_stddev = 1e-4  # define minimum for sigma value, e.g. 1e-4
 
         # 2. Define Gaussian tf probability distribution layer
-        self.action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
+        self.action_dist = tfd.Normal(GaussianParams["Loc"], min_stddev, validate_args=True)
 
         # 3. Sample policy to get action
         action = self.action_dist.sample()
