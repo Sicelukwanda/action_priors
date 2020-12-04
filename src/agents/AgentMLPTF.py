@@ -11,8 +11,8 @@ tf.keras.backend.set_floatx('float32')
 from IPython.core.debugger import set_trace
 
 # Set random seeds
-#tf.random.set_seed(0)
-#np.random.seed(0)
+tf.random.set_seed(0)
+np.random.seed(0)
 
 
 class GaussianAgent(Model):
@@ -20,7 +20,7 @@ class GaussianAgent(Model):
     Uses subclassing and functional API in keras to define a Gaussian MLP policy.
     """
 
-    def __init__(self,action_dim=1,state_dim=1):
+    def __init__(self, action_dim=1, state_dim=1):
         super(GaussianAgent, self).__init__()
 
         # declare action distribution
@@ -37,13 +37,14 @@ class GaussianAgent(Model):
         # norm_inputs = normalizer(inputs)
 
         # model layers (output = activation(dot(input, kernel) + bias) )
-        d1 = Dense(15, activation='relu', name="d1")(inputs)
-        d1 = Dense(15, activation='relu', name="d12")(d1)
-        d2_mu = Dense(action_dim, activation='tanh', name="d2_mu")(d1)
-        # d2_sigma = Dense(action_dim, activation='exponential', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
+        d1 = Dense(64, activation='relu', name="d1")(inputs)
+        d1 = Dense(64, activation='relu', name="d12")(d1)
+        d1 = Dense(64, activation='relu', name="d13")(d1)
+        d2_mu = Dense(action_dim, activation='tanh', name="d2_mu")(d1)*2
+        d2_sigma = Dense(action_dim, activation='sigmoid', name="d2_sigma")(d1)  # consider using sigmoid/exponential here
 
         # model outputs
-        outputs = {"Loc": d2_mu} #, "Scale": d2_sigma}
+        outputs = {"Loc": d2_mu, "Scale": d2_sigma}
 
         self.model = tf.keras.Model(inputs, outputs)  # model returns TFP Gaussian dist params as output
 
@@ -60,7 +61,7 @@ class GaussianAgent(Model):
         min_stddev = 1e-4  # define minimum for sigma value, e.g. 1e-4
 
         # 2. Define Gaussian tf probability distribution layer
-        self.action_dist = tfd.Normal(GaussianParams["Loc"], min_stddev, validate_args=True)
+        self.action_dist = tfd.Normal(GaussianParams["Loc"], GaussianParams["Scale"]+min_stddev, validate_args=True)
 
         # 3. Sample policy to get action
         action = self.action_dist.sample()
